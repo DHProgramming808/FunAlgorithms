@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System;
+using System.IO;
+using System.Linq;
 
 namespace Api.Controllers;
 
@@ -33,7 +36,7 @@ public class AlgorithmsController : ControllerBase
             return NotFound(new { error = $"Data file for '{id}' not found." });
 
         // 3) Run python
-        var result = await RunPython(pyFile, dataFile);
+        var result = await RunPython(id);
 
         if (!result.Success)
             return StatusCode(500, new { error = "Python execution failed.", details = result.Error });
@@ -65,6 +68,25 @@ public class AlgorithmsController : ControllerBase
         return Content(text, "text/plain; charset=utf-8");
     }
 
+    [HttpGet]
+    public IActionResult ListAlgorithms()
+    {
+        if (!Directory.Exists(PyDir))
+            return Ok(new { algorithms = Array.Empty<string>() });
+
+        var ids = Directory.EnumerateFiles(PyDir, "*.py", SearchOption.TopDirectoryOnly)
+            .Select(Path.GetFileNameWithoutExtension)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            // optional: hide private/helper files like _runner.py if you ever place them here
+            .Where(name => !name.StartsWith("_"))
+            // enforce the same safety rules you use for routing
+            .Where(IsSafeId)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return Ok(new { algorithms = ids });
+    }
+
     private static bool IsSafeId(string id)
     {
         // allow letters, numbers, underscore, dash only
@@ -77,13 +99,23 @@ public class AlgorithmsController : ControllerBase
         return id.Length > 0 && id.Length <= 64;
     }
 
-    private static async Task<(bool Success, string Stdout, string Error)> RunPython(string pyFile, string dataFile)
+    private static async Task<(bool Success, string Stdout, string Error)> RunPython(string algorithmId)
     {
         // Uses `python` from PATH. You can swap to `python3` if needed.
+        var runnerPath = Path.Combine(RepoRoot, "Algorithms", "runner", "runner.py");
+
+        if (!System.IO.File.Exists(runnerPath))
+            return (false, "", $"Runner not found at: {runnerPath}");
+
+        // Uses `python` from PATH. Swap to python3 if needed.
         var psi = new ProcessStartInfo
         {
             FileName = "python",
-            Arguments = $"\"{pyFile}\" --data \"{dataFile}\"",
+            Arguments =
+                $"\"{runnerPath}\" " +
+                $"--id \"{algorithmId}\" " +
+                $"--algo-dir \"{PyDir}\" " +
+                $"--data-dir \"{DataDir}\"",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
