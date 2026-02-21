@@ -1,0 +1,72 @@
+########################################
+# .NET / C#
+########################################
+
+# Build results
+**/bin/
+**/obj/
+
+# Rider
+.idea/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Publish output
+publish/
+out/
+
+# Logs
+*.log
+
+########################################
+# Python
+########################################
+
+# Byte-compiled
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+########################################
+# OS / Misc
+########################################
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+########################################
+# Optional: Local settings (if you add later)
+########################################
+
+appsettings.Development.json
+.env
+.env.*
