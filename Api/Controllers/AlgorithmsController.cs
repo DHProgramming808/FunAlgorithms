@@ -63,9 +63,13 @@ public class AlgorithmsController : ControllerBase
         if (!System.IO.File.Exists(pyFile))
             return NotFound(new { error = $"Algorithm '{id}' not found." });
 
-        // Return raw text with correct formatting
-        var text = System.IO.File.ReadAllText(pyFile, Encoding.UTF8);
-        return Content(text, "text/plain; charset=utf-8");
+        var bytes = System.IO.File.ReadAllBytes(pyFile);
+
+        return File(
+            bytes,
+            "text/plain; charset=utf-8",
+            $"{id}.py"
+        );
     }
 
     [HttpGet]
