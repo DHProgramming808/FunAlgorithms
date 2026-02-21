@@ -50,6 +50,21 @@ public class AlgorithmsController : ControllerBase
         }
     }
 
+    [HttpGet("{id}/code")]
+    public IActionResult GetCode([FromRoute] string id)
+    {
+        if (!IsSafeId(id))
+            return BadRequest(new { error = "Invalid algorithm id." });
+
+        var pyFile = Path.Combine(PyDir, $"{id}.py");
+        if (!System.IO.File.Exists(pyFile))
+            return NotFound(new { error = $"Algorithm '{id}' not found." });
+
+        // Return raw text with correct formatting
+        var text = System.IO.File.ReadAllText(pyFile, Encoding.UTF8);
+        return Content(text, "text/plain; charset=utf-8");
+    }
+
     private static bool IsSafeId(string id)
     {
         // allow letters, numbers, underscore, dash only
