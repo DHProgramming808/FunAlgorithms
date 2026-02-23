@@ -3,5 +3,9 @@
     { "args": [[2, 3, 1, 1, 4]], "expected": true },
     { "args": [[3, 2, 1, 0, 4]], "expected": false },
     { "args": [[0]], "expected": true }
-  ]
+  ],
+    "test_schema": {
+        "args": [[]],
+        "expected": "boolean"
+    }
 }
